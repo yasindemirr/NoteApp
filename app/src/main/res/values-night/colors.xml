@@ -2,4 +2,5 @@
 <resources>
     <color name="textColorrrr">#FFFFFF</color>
     <color name="background_white">#000000</color>
+    <color name="bottomBar">#1B1919</color>
 </resources>

@@ -13,13 +13,13 @@ class SharedPref(context:Context) {
     fun setNightModeState(state:Boolean?){
         val editor=sharedPreferences.edit()
         editor.putBoolean("Night Mode",state!!)
-        editor.commit()
+        editor.apply()
 
     }
     fun setLayoutModeState(state:Boolean?){
         val editor=sharedPreferences.edit()
-        editor.putBoolean("Linear",state!!)
-        editor.commit()
+        editor.putBoolean("layout",state!!)
+        editor.apply()
 
     }
     fun loadNightModeState():Boolean?{
@@ -27,7 +27,7 @@ class SharedPref(context:Context) {
 
     }
     fun loadLayoutModeState():Boolean?{
-        return sharedPreferences.getBoolean("Linear",false)
+        return sharedPreferences.getBoolean("layout",false)
 
     }
 }

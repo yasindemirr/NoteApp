@@ -18,6 +18,7 @@ class NoteAdapter : RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
 
     class NoteViewHolder(val itemBinding: NoteLayoutItemBinding) :
         RecyclerView.ViewHolder(itemBinding.root)
+    var colorsList :Array<String> = arrayOf( "#6C00FF","#C92C6D","#85CDFD","#FF9551","#A0D995","#F8B400","#BB6464","#DD4A48")
 
 
     private val differCallback =
@@ -64,14 +65,17 @@ class NoteAdapter : RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
             )
             //holder.binding.homeImage.visibility = View.VISIBLE
         }
-        val random = Random
+    //    val random = Random
+        /*
         val color =
             Color.argb(
                 255, random.nextInt(256),
                 random.nextInt(256), random.nextInt(256)
             )
-        holder.itemBinding.constraintLayout.setBackgroundColor(color)
 
+         */
+        holder.itemBinding.constraintLayout.setBackgroundColor(Color.parseColor(currentNote.colors))
+        holder.itemBinding.tvDate.text=currentNote.date
         holder.itemView.setOnClickListener { view ->
 
 

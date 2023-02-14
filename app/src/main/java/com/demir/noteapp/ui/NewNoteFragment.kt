@@ -3,6 +3,7 @@ package com.demir.noteapp.ui
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.ImageDecoder
 import android.os.Build
 import android.os.Bundle
@@ -16,30 +17,37 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import com.demir.noteapp.R
 import com.demir.noteapp.databinding.FragmentNewNoteBinding
 import com.demir.noteapp.helper.toast
 import com.demir.noteapp.model.Note
-import com.demir.noteapp.viewmodel.NoteViewModel
+import com.demir.noteapp.viewmodel.NotesViewModel
 import com.google.android.material.snackbar.Snackbar
+import com.skydoves.colorpickerview.ColorEnvelope
+import com.skydoves.colorpickerview.ColorPickerDialog
+import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener
 import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.*
+import java.util.logging.SimpleFormatter
 
 
-class NewNoteFragment : Fragment(R.layout.fragment_new_note) {
+class NewNoteFragment : Fragment() {
 
-    private var _binding: FragmentNewNoteBinding? = null
-    var selectedBitmap : Bitmap? = null
+    private lateinit var binding:FragmentNewNoteBinding
+    private var selectedBitmap : Bitmap? = null
     private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
     private lateinit var permissionLauncher: ActivityResultLauncher<String>
-    private val binding get() = _binding!!
-    private lateinit var noteViewModel: NoteViewModel
-    var byteArray:ByteArray?=null
+    private lateinit var noteViewModel: NotesViewModel
+    private var byteArray:ByteArray?=null
     private lateinit var note:Note
     private lateinit var mView: View
     private lateinit var toolBar: Toolbar
+    private var color="#FFFFFF"
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,29 +59,49 @@ class NewNoteFragment : Fragment(R.layout.fragment_new_note) {
         savedInstanceState: Bundle?
     ): View {
 
-        _binding = FragmentNewNoteBinding.inflate(
-            inflater,
+        binding = FragmentNewNoteBinding.inflate(
+            layoutInflater,
             container,
             false
         )
-
+        (activity as AppCompatActivity?)!!.supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         return binding.root
     }
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        noteViewModel = ViewModelProvider(this).get(NoteViewModel::class.java)
+        noteViewModel = (activity as MainActivity).viewModel
+        colorPick()
         mView = view
         selectImage()
         registerLauncher()
         toolBar= requireActivity().findViewById(R.id.toolbar)
     }
 
+    private fun colorPick() {
+        binding.colorPicker.setOnClickListener {
+            ColorPickerDialog.Builder(requireContext()).setTitle("Product Color")
+                .setPositiveButton("Select", object : ColorEnvelopeListener {
+                    override fun onColorSelected(envelope: ColorEnvelope?, fromUser: Boolean) {
+                        envelope?.let{
+                            color="#${Integer.toHexString(it.color).substring(2)}"
+                            binding.cardView2.setCardBackgroundColor(Color.parseColor(color))
+
+                        }
+                    }
+                })
+                .setNegativeButton("Cancel"){colorPicker,_->
+                    colorPicker.dismiss()
+                }.show()
+        }
+
+    }
+
     private fun saveNote(view: View) {
         val noteTitle = binding.etNoteTitle.text.toString().trim()
         val noteBody = binding.etNoteBody.text.toString().trim()
-
+        val date=SimpleDateFormat("EEE, d MMM yyyy HH:mm", Locale("tr","tr")).format(Date())
         if (noteTitle.isNotEmpty()) {
             if (selectedBitmap != null){
                 val smallBitmap = makeSmallerBitmap(selectedBitmap!!,300)
@@ -81,17 +109,16 @@ class NewNoteFragment : Fragment(R.layout.fragment_new_note) {
                 smallBitmap.compress(Bitmap.CompressFormat.PNG,50,outputStream)
                 byteArray = outputStream.toByteArray()
             }
-                 note = Note(0, noteTitle, noteBody,byteArray)
+                 note = Note(0, noteTitle, noteBody,byteArray,color,date)
             noteViewModel.addNote(note)
-            Snackbar.make(
-                view, "Note saved successfully",
-                Snackbar.LENGTH_SHORT
-            ).show()
-            view.findNavController().navigate(R.id.action_newNoteFragment_to_homeFragment)
+            Snackbar.make(view,"Saved Succesfully",Snackbar.LENGTH_SHORT).show()
+              view.findNavController().navigate(R.id.action_newNoteFragment_to_homeFragment)
 
         } else {
-            activity?.toast("Please enter note title")
+          //  activity?.toast("Please enter note title")
+            Snackbar.make(view,"Please enter note title",Snackbar.LENGTH_SHORT).show()
         }
+
     }
 
 
@@ -106,17 +133,13 @@ class NewNoteFragment : Fragment(R.layout.fragment_new_note) {
         when (item.itemId) {
             R.id.menu_save -> {
                 saveNote(mView)
+
             }
             else -> findNavController().navigateUp()
         }
         return true
     }
 
-
-    override fun onDestroy() {
-        super.onDestroy()
-        _binding = null
-    }
     private fun selectImage() {
         binding.imageControl.setOnClickListener{view->
             if(ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -146,6 +169,7 @@ class NewNoteFragment : Fragment(R.layout.fragment_new_note) {
                             selectedBitmap = ImageDecoder.decodeBitmap(source)
                             binding.selectedImage.setImageBitmap(selectedBitmap)
                             binding.selectedImage.visibility=View.VISIBLE
+
                         } else {
                             selectedBitmap = MediaStore.Images.Media.getBitmap(requireContext().contentResolver, imageData)
                             binding.selectedImage.setImageBitmap(selectedBitmap)

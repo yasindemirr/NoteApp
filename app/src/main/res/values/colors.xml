@@ -10,5 +10,6 @@
     <color name="background_white">#EDE9E9</color>
     <color name="hintColor">#928E8E</color>
     <color name="backRaoundColor">#FFFFFF</color>
-    <color name="textColorrrr">#FF000000</color>
+    <color name="bottomBar">#61DACC</color>
+    <color name="textColorrrr">#0C0C0C</color>
 </resources>
