@@ -8,6 +8,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.demir.noteapp.R
@@ -219,9 +220,8 @@ class HomeFragment : Fragment(), SearchView.OnQueryTextListener {
         val intent= Intent(requireContext().applicationContext,MainActivity::class.java)
         startActivity(intent)
         requireActivity().finish()
-
-
-
-
+    }
+    override fun onDestroy() {
+        super.onDestroy()
     }
 }
