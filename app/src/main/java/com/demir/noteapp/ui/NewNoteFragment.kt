@@ -199,7 +199,7 @@ class NewNoteFragment : Fragment() {
     private fun saveNote(view: View) {
         val noteTitle = binding.etNoteTitle.text.toString().trim()
         val noteBody = binding.etNoteBody.text.toString().trim()
-        val date=SimpleDateFormat("EEE, d MMM yyyy HH:mm", Locale("tr","tr")).format(Date())
+        val date=SimpleDateFormat("d MMM yyyy HH:mm", Locale("tr","tr")).format(Date())
 
         if (noteTitle.isNotEmpty()) {
             if (selectedBitmap != null){
