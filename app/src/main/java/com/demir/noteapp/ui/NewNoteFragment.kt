@@ -60,7 +60,6 @@ class NewNoteFragment : Fragment() {
     val handler=Handler()
     private lateinit var recorder: Recorder
     private lateinit var toolBar: Toolbar
-    val media=MediaPlayer()
     private var color="#FFFFFF"
 
 
@@ -80,6 +79,7 @@ class NewNoteFragment : Fragment() {
             false
         )
         (activity as AppCompatActivity?)!!.supportActionBar!!.setDisplayHomeAsUpEnabled(true)
+        askPermission()
         return binding.root
     }
 
@@ -151,7 +151,6 @@ class NewNoteFragment : Fragment() {
         alertBuilder= AlertDialog.Builder(requireContext())
         alertBuilder.setView(view)
         val dialog=alertBuilder.create()
-        askPermission()
         dialog.show()
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         var timeText=view.findViewById<TextView>(R.id.timerText)
