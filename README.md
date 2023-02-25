@@ -3,10 +3,12 @@ NoteApp is a simple notepad application.It gives you a quick and easy notebook
 editing experience to take notes, make shopping lists or to-do lists. You can also
 color your notes and add photos to them.
 
-<img src="https://user-images.githubusercontent.com/123153282/218310533-1b701e34-6772-4c73-ad15-8621792c90d3.png" width="250" height="450">
-<img src="https://user-images.githubusercontent.com/123153282/218310534-d0b78a7a-879c-4e34-8ee1-7c821f3f6f1a.png" width="250" height="450">
-<img src="https://user-images.githubusercontent.com/123153282/218310535-5ae84fee-6aef-495e-9284-cf2218102d98.png" width="250" height="450">
-<img src="https://user-images.githubusercontent.com/123153282/218310537-f3f6492c-5501-417f-bf46-fdbb7814f45b.png" width="250" height="450">
-<img src="https://user-images.githubusercontent.com/123153282/218310541-862a8cb8-ce1d-4ffd-98ea-5485c480def8.png" width="250" height="450">
-<img src="https://user-images.githubusercontent.com/123153282/218310544-7088d64a-78f5-4542-b2c1-f8f55d779299.png" width="250" height="450">
+<img src="https://user-images.githubusercontent.com/123153282/221349861-41468382-afb3-4f3c-9da6-d3dc663f0490.png" width="200" height="400">
+<img src="https://user-images.githubusercontent.com/123153282/221349863-643ebc8c-76df-443e-a041-183ca1127eb5.png" width="200" height="400">
+<img src="https://user-images.githubusercontent.com/123153282/221349865-787ec6a2-4d0f-4e4d-892f-0f0bad6e6c59.png" width="200" height="400">
+<img src="https://user-images.githubusercontent.com/123153282/221349867-a55ed7c5-6a1c-4380-9348-17f5db519b29.png" width="200" height="400">
+<img src="https://user-images.githubusercontent.com/123153282/221349868-eec4721c-61c4-419e-b8ee-d5a5782d6a57.png" width="200" height="400">
+<img src="https://user-images.githubusercontent.com/123153282/221349869-b6b74a71-c5c4-44ff-9bb5-a0682db0a47b.png" width="200" height="400">
+<img src="https://user-images.githubusercontent.com/123153282/221349872-1229abb4-60b0-40a1-b4d2-4ba3051b5261.png" width="200" height="400">
+
 
