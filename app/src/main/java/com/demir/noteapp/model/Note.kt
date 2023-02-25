@@ -14,7 +14,8 @@ data class Note(
     val noteBody: String?,
     val image:ByteArray?,
     val colors:String?=null,
-    val date:String?
+    val date:String?,
+    val audioFile: String?
 ) : Parcelable {
 }
 

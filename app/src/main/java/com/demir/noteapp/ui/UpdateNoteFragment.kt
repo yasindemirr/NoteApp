@@ -1,5 +1,7 @@
 package com.demir.noteapp.ui
 
+import Recorder
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
@@ -11,8 +13,10 @@ import android.graphics.Color
 import android.graphics.ImageDecoder
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.provider.MediaStore
 import android.view.*
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -50,6 +54,7 @@ class UpdateNoteFragment : Fragment(R.layout.fragment_update_note) {
     private lateinit var currentNote: Note
     private lateinit var noteViewModel: NotesViewModel
     private lateinit var toolBar:Toolbar
+    private lateinit var recorder: Recorder
     private var color=""
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,6 +85,9 @@ class UpdateNoteFragment : Fragment(R.layout.fragment_update_note) {
         colorPick()
         selectImage()
         registerLauncher()
+        context?.let {
+            recorder=Recorder(it)
+        }
 
         binding.etNoteBodyUpdate.setText(currentNote.noteBody)
         binding.etNoteTitleUpdate.setText(currentNote.noteTitle)
@@ -89,6 +97,21 @@ class UpdateNoteFragment : Fragment(R.layout.fragment_update_note) {
         binding.updtadeCardView.setCardBackgroundColor(Color.parseColor(currentNote.colors))
         if (currentNote.image != null){
             binding.loadSelectedImage.visibility=View.VISIBLE
+        }
+        if (currentNote.audioFile!=null){
+            binding.savedVoice.visibility=View.VISIBLE
+        }else{
+            binding.savedVoice.visibility=View.GONE
+        }
+        binding.savedVoice.setOnClickListener {
+            currentNote.audioFile?.let { it1 -> recorder.playAudioFile(it1) }
+            binding.savedVoice.setImageResource(recorder.test!!)
+        }
+        recorder. mediaPlayer.setOnCompletionListener {
+            Handler().postDelayed({
+                binding.savedVoice.setImageResource(R.drawable.play_icon)
+            },  500L)
+
         }
 
 
@@ -108,8 +131,8 @@ class UpdateNoteFragment : Fragment(R.layout.fragment_update_note) {
                 }else{
                     byteArray=currentNote.image
                 }
-
-                val note = Note(currentNote.id, title, body,byteArray,color,date)
+            println(currentNote.audioFile)
+                val note = Note(currentNote.id, title, body,byteArray,color,date,currentNote.audioFile)
                 noteViewModel.updateNote(note)
                 Snackbar.make(view,"Note Updated!",Snackbar.LENGTH_SHORT).show()
               //  activity?.toast("Note updated!")
@@ -244,8 +267,6 @@ class UpdateNoteFragment : Fragment(R.layout.fragment_update_note) {
         }
         return Bitmap.createScaledBitmap(image,width,height,true)
     }
-
-
     override fun onDestroy() {
         super.onDestroy()
 

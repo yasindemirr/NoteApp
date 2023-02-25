@@ -12,10 +12,12 @@
         tools:layout="@layout/fragment_home">
         <action
             android:id="@+id/action_homeFragment_to_newNoteFragment"
-            app:destination="@id/newNoteFragment" />
+            app:destination="@id/newNoteFragment"
+             />
         <action
             android:id="@+id/action_homeFragment_to_updateNoteFragment"
-            app:destination="@id/updateFragment" />
+            app:destination="@id/updateFragment"
+            />
     </fragment>
     <fragment
         android:id="@+id/newNoteFragment"

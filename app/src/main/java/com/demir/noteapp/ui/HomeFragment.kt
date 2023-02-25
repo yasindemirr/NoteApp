@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 
@@ -23,7 +24,8 @@ class HomeFragment : Fragment(), SearchView.OnQueryTextListener {
     private lateinit var notesViewModel: NotesViewModel
     private lateinit var noteAdapter: NoteAdapter
     lateinit var sharedPref: SharedPref
-    var control :Boolean=true
+     var check:Boolean?=null
+
 
   //  private lateinit var dash:MenuItem
    // private lateinit var linear:MenuItem
@@ -42,13 +44,24 @@ class HomeFragment : Fragment(), SearchView.OnQueryTextListener {
     ): View {
         binding = FragmentHomeBinding.inflate(layoutInflater, container, false)
         (activity as AppCompatActivity?)!!.supportActionBar!!.setDisplayHomeAsUpEnabled(false)
+
+        sharedPref= SharedPref(requireContext().applicationContext)
+
+        if (sharedPref.loadNightModeState()==true) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            binding.darkMode.setImageResource(R.drawable.ic_baseline_lightbulb_24)
+        } else{
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+            binding.darkMode.setImageResource(R.drawable.ic_baseline_nightlight_round_24)
+        }
+
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         notesViewModel = (activity as MainActivity).viewModel
-        sharedPref= SharedPref(requireContext().applicationContext)
+
         setUpRecyclerView()
 
         if (sharedPref.loadLayoutModeState()==true){
@@ -62,22 +75,21 @@ class HomeFragment : Fragment(), SearchView.OnQueryTextListener {
         }
 
 
-        if (sharedPref.loadNightModeState() == true) {
-            binding.switch1.isChecked = true
-        }
-        binding.switch1.setOnCheckedChangeListener { buttonView, isChecked ->
-            if (isChecked) {
-                sharedPref.setNightModeState(true)
-                restarApp()
+       binding. darkMode.setOnClickListener {
+           // Eğer uygulama karanlık moddayken butona tıklanırsa
+           if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
+               AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+               sharedPref.setNightModeState(false)
+           }
+           // Eğer uygulama aydınlık moddayken butona tıklanırsa
+           else {
+               // Arka plan rengini karanlık moda göre ayarla
+               // Tercihleri kaydet
+               AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+               sharedPref.setNightModeState(true)
 
-
-            } else {
-                sharedPref.setNightModeState(false)
-                restarApp()
-
-            }
-
-        }
+           }
+       }
 
     }
 

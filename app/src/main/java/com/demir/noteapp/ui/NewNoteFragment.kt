@@ -1,14 +1,24 @@
 package com.demir.noteapp.ui
 
+
+import Recorder
+import android.Manifest
+import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.ImageDecoder
+import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.provider.MediaStore
 import android.view.*
+import android.widget.ImageView
+import android.widget.RadioGroup
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -21,6 +31,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import com.demir.noteapp.R
 import com.demir.noteapp.databinding.FragmentNewNoteBinding
+import com.demir.noteapp.databinding.RecordingVoiceAlertDialogBinding
 import com.demir.noteapp.helper.toast
 import com.demir.noteapp.model.Note
 import com.demir.noteapp.viewmodel.NotesViewModel
@@ -42,10 +53,14 @@ class NewNoteFragment : Fragment() {
     private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
     private lateinit var permissionLauncher: ActivityResultLauncher<String>
     private lateinit var noteViewModel: NotesViewModel
+    private lateinit var alertBuilder:AlertDialog.Builder
     private var byteArray:ByteArray?=null
     private lateinit var note:Note
     private lateinit var mView: View
+    val handler=Handler()
+    private lateinit var recorder: Recorder
     private lateinit var toolBar: Toolbar
+    val media=MediaPlayer()
     private var color="#FFFFFF"
 
 
@@ -76,9 +91,94 @@ class NewNoteFragment : Fragment() {
         mView = view
         selectImage()
         registerLauncher()
-        toolBar= requireActivity().findViewById(R.id.toolbar)
+        toolBar = requireActivity().findViewById(R.id.toolbar)
+        context?.let {
+            recorder = Recorder(it)
+        }
+        voiceDialog()
+        binding.savedVoice.setOnClickListener {
+
+            if (recorder.file?.exists() == true) {
+                recorder.playAudioFile(recorder.file!!.absolutePath)
+                binding.savedVoice.setImageResource(recorder.test!!)
+
+            } else {
+                Toast.makeText(context, "File is Empty", Toast.LENGTH_SHORT).show()
+            }
+        }
+        recorder. mediaPlayer.setOnCompletionListener {
+            Handler().postDelayed({
+                binding.savedVoice.setImageResource(R.drawable.play_icon)
+            },  500L)
+
+        }
+    }
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 0) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED &&
+                grantResults[1] == PackageManager.PERMISSION_GRANTED
+            ) {
+                // İzinler verildiğinde yapılacak işlemler burada yazılabilir.
+            } else {
+                Toast.makeText(context, "Request Permission", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
+    private fun askPermission() {
+
+        val permissions = arrayOf(android.Manifest.permission.RECORD_AUDIO,
+            android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        if (ContextCompat.checkSelfPermission(requireContext(),
+                Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(requireContext(),
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(requireActivity(), permissions, 0)
+        }
+    }
+
+
+    @SuppressLint("ClickableViewAccessibility")
+    private fun voiceDialog() {
+    binding.micro.setOnLongClickListener {
+        val view =LayoutInflater.from(requireContext()).inflate(R.layout.recording_voice_alert_dialog,null)
+        alertBuilder= AlertDialog.Builder(requireContext())
+        alertBuilder.setView(view)
+        val dialog=alertBuilder.create()
+        askPermission()
+        dialog.show()
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        var timeText=view.findViewById<TextView>(R.id.timerText)
+        var startTime = System.currentTimeMillis()
+        recorder.startRecording()
+        handler.post(object : Runnable {
+            override fun run() {
+                val elapsedTime = System.currentTimeMillis() - startTime
+                timeText.text = formatTime(elapsedTime)
+                handler.postDelayed(this, 1000)
+            }
+        })
+        binding.micro.setOnTouchListener { _, event ->
+            when (event.action) {
+                MotionEvent.ACTION_UP -> {
+                    recorder.stopRecording()
+                    handler.removeCallbacksAndMessages(null)
+                    dialog.dismiss()
+                    binding.micro.setOnTouchListener(null)
+                    binding.savedVoice.visibility=View.VISIBLE
+                }
+            }
+            true
+        }
+        true
+    }
+    }
     private fun colorPick() {
         binding.colorPicker.setOnClickListener {
             ColorPickerDialog.Builder(requireContext()).setTitle("Product Color")
@@ -95,13 +195,12 @@ class NewNoteFragment : Fragment() {
                     colorPicker.dismiss()
                 }.show()
         }
-
     }
-
     private fun saveNote(view: View) {
         val noteTitle = binding.etNoteTitle.text.toString().trim()
         val noteBody = binding.etNoteBody.text.toString().trim()
         val date=SimpleDateFormat("EEE, d MMM yyyy HH:mm", Locale("tr","tr")).format(Date())
+
         if (noteTitle.isNotEmpty()) {
             if (selectedBitmap != null){
                 val smallBitmap = makeSmallerBitmap(selectedBitmap!!,300)
@@ -109,7 +208,7 @@ class NewNoteFragment : Fragment() {
                 smallBitmap.compress(Bitmap.CompressFormat.PNG,50,outputStream)
                 byteArray = outputStream.toByteArray()
             }
-                 note = Note(0, noteTitle, noteBody,byteArray,color,date)
+                 note = Note(0, noteTitle, noteBody,byteArray,color,date,recorder.file?.absolutePath)
             noteViewModel.addNote(note)
             Snackbar.make(view,"Saved Succesfully",Snackbar.LENGTH_SHORT).show()
               view.findNavController().navigate(R.id.action_newNoteFragment_to_homeFragment)
@@ -208,6 +307,23 @@ class NewNoteFragment : Fragment() {
             width = scaledWidth.toInt()
         }
         return Bitmap.createScaledBitmap(image,width,height,true)
+    }
+
+    fun formatTime(timeInMillis: Long): String {
+        val seconds = timeInMillis / 1000
+        val minutes = seconds / 60
+        val remainingSeconds = seconds % 60
+        return String.format("%02d:%02d", minutes, remainingSeconds)
+    }
+
+    override fun onStop() {
+        super.onStop()
+
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+       recorder.stopPlaying()
     }
 
 
